@@ -35,6 +35,8 @@ import org.scijava.Context;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 
+import jnr.ffi.Struct.id_t;
+
 
 public class ScalaScriptEngineTest {
 
@@ -53,23 +55,6 @@ public class ScalaScriptEngineTest {
         sse = language.getScriptEngine();
     }
 
-    @Test
-    public void accessString() throws ScriptException {
-        // Create some bindings
-        Bindings bindings = sse.createBindings();
-
-        // Add a string String to the Bindings
-        bindings.put("hello", "Hello from the");
-
-        String script = String.join(
-            LINESEP,
-            "val greeting: String = s\"$hello Scala Script Engine\"",
-            "greeting" // evals greeting at the end of script returning it
-        );
-
-        String out = (String) sse.eval(script, bindings);
-        assertEquals("Hello from the Scala Script Engine", out);
-    }
 
     @Test
     public void accessInt() throws ScriptException {
@@ -82,11 +67,12 @@ public class ScalaScriptEngineTest {
         // Add 2 to the integer in the bindings. Note we need to cast
         // the integer in the bindings to an Int using asInstanceOf.
         String script = String.join(
-            LINESEP,
+            LINESEP, //line separator
             "val three: Int = one.asInstanceOf[Int] + 2",
-            "three"
+            "three" // eval three to return it from script
         );
 
+        // note we need to cast output of script to its correct type too!
         int out = (int) sse.eval(script, bindings);
         assertEquals(3, out);
     }
@@ -108,6 +94,7 @@ public class ScalaScriptEngineTest {
             "len" // eval len to return it from script
         );
 
+        // note we need to cast output of script to its correct type too!
         int len = (int) sse.eval(script, bindings);
 
         assertEquals(5, len);
@@ -128,6 +115,7 @@ public class ScalaScriptEngineTest {
             "out"
         );
 
+        // note we need to cast output of script to its correct type too!
         int[] out = (int[]) sse.eval(script, bindings);
 
         assertArrayEquals(new int[]{2,3,4,5,6}, out);
@@ -155,7 +143,28 @@ public class ScalaScriptEngineTest {
             "hw"
         );
 
+        // note we need to cast output of script to its correct type too!
         String out = (String) sse.eval(script, bindings);
         assertEquals("Hello World!", out);
+    }
+
+    @Test
+    public void accessString() throws ScriptException {
+        // Create some bindings
+        Bindings bindings = sse.createBindings();
+
+        // Add a string String to the Bindings
+        bindings.put("hello", "Hello from the");
+
+        // generally we don't need to cast Strings because I think the
+        // Objects toString method gets called automatically.
+        String script = String.join(
+            LINESEP,
+            "val greeting: String = s\"$hello Scala Script Engine\"",
+            "greeting" // evals greeting to return ia from script
+        );
+
+        String out = (String) sse.eval(script, bindings);
+        assertEquals("Hello from the Scala Script Engine", out);
     }
 }
